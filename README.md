@@ -1,4 +1,4 @@
-上已线http://1.116.174.17/  H欢迎访问.        
+上已线http://1.116.174.172/  H欢迎访问.        
 
 技术栈:  Java + SSM (Spring + Spring MVC + MyBatis) + MySQL + Linux/Ubuntu + Tomcat + Redis + Nginx
 
