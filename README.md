@@ -1,8 +1,8 @@
-上已线http://1.116.174.172/  H欢迎访问.        
+#上已线http://1.116.174.170/  欢迎访问.        
 
-技术栈:  Java + SSM (Spring + Spring MVC + MyBatis) + MySQL + Linux/Ubuntu + Tomcat + Redis + Nginx
+#技术栈:  Java + SSM (Spring + Spring MVC + MyBatis) + MySQL + Linux/Ubuntu + Tomcat + Redis + Nginx
 
-主要功能:
+#主要功能:
 
 1. 用户模块, 登陆注册, 用户权限, 个人主页和个人信息管理.
 
