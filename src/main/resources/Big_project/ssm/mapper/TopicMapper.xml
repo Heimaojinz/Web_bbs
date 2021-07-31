@@ -1,0 +1,311 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 和 java mapper 的类名一样，从包名开始打，有自动补全-->
+<mapper namespace="Big_project.ssm.mapper.TopicMapper">
+    <!-- resultType 和 mapper 中的方法返回值一样，不能省，从包名开始打，有自动补全-->
+    <!--  里面的 sql 语句，有自动补全,要配置 ide 的 datasource -->
+    <select id="selectAll" resultType="Big_project.ssm.model.TopicModel">
+        SELECT * FROM ssm.topic
+    </select>
+
+    <!-- 传参数方式1，直接传入一个基本类型 int，这个 int 会被绑定到 ${id} -->
+    <select id="selectOne" resultType="Big_project.ssm.model.TopicModel">
+        SELECT * FROM ssm.topic WHERE id = #{id}
+    </select>
+
+    <!-- 传参数方式1，直接传入一个基本类型 int，这个 int 会被绑定到 ${id} -->
+    <select id="selectOnetab" resultType="Big_project.ssm.model.TopicModel">
+        SELECT * FROM ssm.topic WHERE boardId = #{id}
+    </select>
+
+
+    <!-- 传参数方式1，直接传入一个基本类型 int，这个 int 会被绑定到 ${id} -->
+    <select id="selectallOne" resultType="Big_project.ssm.model.TopicModel">
+        SELECT * FROM ssm.topic    WHERE  userId = #{id}  order by updatedTime desc
+    </select>
+
+<!--    <select id="selectAllOne" resultType="BoardModel">-->
+<!--        SELECT * FROM ssm.board WHERE name = #{name}-->
+<!--    </select>-->
+    <!-- 传参方式2，传入一个对象。content 代表这个对象的 content 属性，注意这个对象要有 getter setter -->
+    <!-- useGeneratedKeys keyProperty 当我传入一个对象的时候，这两个属性可以把数据库创建的 id 赋值给这个对象 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ssm.topic
+            (title, content, userId, boardId, createdTime, updatedTime, Visit, toiccomment_Visit)
+        VALUES
+            (#{title}, #{content}, #{userId}, #{boardId}, #{updatedTime}, #{createdTime}, #{Visit}, #{toiccomment_Visit})
+    </insert>
+    
+    <update id="update">
+        UPDATE ssm.topic
+        SET
+            updatedTime = #{updatedTime},
+            content = #{content},
+            title = #{title}
+        WHERE id = #{id}
+    </update>
+
+    <update id="visit_update">
+        UPDATE ssm.topic
+        SET
+                Visit = #{Visit}
+        WHERE id = #{id}
+    </update>
+
+    <update id="toiccomment_Visit_update">
+        UPDATE ssm.topic
+        SET
+                toiccomment_Visit = #{toiccomment_Visit}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM ssm.topic WHERE id = #{id}
+    </delete>
+
+    <resultMap id="selectOneWithCommentsMap" type="Big_project.ssm.model.TopicModel">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="boardId" column="boardId"/>
+        <result property="Visit" column="Visit"/>
+        <result property="toiccomment_Visit" column="toiccomment_Visit"/>
+        <collection property="commentList" ofType="Big_project.ssm.model.TopicCommentModel">
+            <id property="id" column="c_id"/>
+            <result property="content" column="c_content"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectOneWithComments"  resultMap="selectOneWithCommentsMap">
+        select
+            topic.id,
+            topic.title,
+            topic.content,
+            topic.boardId,
+            topic.Visit,
+            topic.toiccomment_Visit,
+            topiccomment.id as c_id,
+            topiccomment.content as c_content
+        from
+            topic  left join topiccomment
+        on topic.id = topiccomment.topicId
+        where  topic.id = #{id};
+    </select>
+
+    <resultMap id="selectOneWithCommentsMapall" type="Big_project.ssm.model.TopicModel">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="toiccomment_Visit" column="toiccomment_Visit"/>
+        <result property="Visit" column="Visit"/>
+
+        <association property="user" javaType="Big_project.ssm.model.UserModel" column="u_username">
+            <result property="avatar"  column="avatar"/>
+        </association>
+
+        <collection property="commentList" ofType="Big_project.ssm.model.TopicCommentModel">
+        <result property="updatedTime" column="c_updatedTime"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectOneWithCommentsMapall" resultMap="selectOneWithCommentsMapall">
+        select   distinct
+                topic.id,
+                topic.userid,
+                topic.title,
+                topic.content,
+                topic.toiccomment_Visit,
+                topic.Visit,
+                user.avatar,
+                topiccomment.updatedTime as c_updatedTime
+        from topic  join topiccomment
+                on topic.id = topiccomment.topicId
+                    join user
+                on topic.userId = user.id
+        where topiccomment.userId = #{id}
+        order by topiccomment.updatedTime desc
+    </select>
+
+    <resultMap id="selectOneWithCommentsAndUserMap" type="Big_project.ssm.model.TopicModel">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="updatedTime" column="updatedTime"/>
+        <collection property="commentList" ofType="Big_project.ssm.model.TopicCommentModel">
+            <id property="id" column="c_id"/>
+            <result property="content" column="c_content"/>
+            <result property="updatedTime" column="c_updatedTime"/>
+            <association property="user" javaType="Big_project.ssm.model.UserModel" column="u_username">
+                <result property="username" column="u_username"/>
+            </association>
+        </collection>
+
+    </resultMap>
+
+    <select id="selectOneWithCommentsAndUser"  resultMap="selectOneWithCommentsAndUserMap">
+        select
+                topic.id,
+                topic.title,
+                topic.content,
+                topic.updatedTime,
+                topiccomment.id as c_id,
+                topiccomment.content as c_content,
+                topiccomment.updatedTime as c_updatedTime,
+            user.username as u_username
+        from topic join topiccomment
+                        on topic.id = topiccomment.topicId
+                   join user
+                        on user.id  = topiccomment.userId
+        where topic.id = #{id}
+    </select>
+
+
+    <resultMap id="selectOneWithCommentsAndUserMapaop" type="Big_project.ssm.model.TopicCommentModel">
+            <id property="id" column="id"/>
+            <result property="content" column="content"/>
+        <result property="updatedTime" column="updatedTime"/>
+            <association property="user" javaType="Big_project.ssm.model.UserModel" column="u_username">
+                <id property="id" column="user_id"/>
+                <result property="username" column="u_username"/>
+                <result property="avatar" column="avatar"/>
+            </association>
+    </resultMap>
+
+    <select id="selectOneWithCommentsAndUseraop"  resultMap="selectOneWithCommentsAndUserMapaop">
+        select
+                topiccomment.id ,
+                topiccomment.content ,
+                topiccomment.updatedTime,
+                user.id as user_id,
+                user.username as u_username,
+                user.avatar
+        from topic join topiccomment
+                on topic.id = topiccomment.topicId
+                   join user
+                on user.id  = topiccomment.userId
+        where topic.id = #{id}
+              order by updatedTime desc
+    </select>
+
+<!--    取帖子的内容和用户-->
+    <resultMap id="selectOnetopic" type="Big_project.ssm.model.TopicModel">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="userId" column="userId"/>
+        <result property="boardId" column="boarTid"/>
+        <result property="updatedTime" column="updatedTime"/>
+        <association property="user" javaType="Big_project.ssm.model.UserModel" column="u_username">
+            <id property="id" column="user_id"/>
+            <result property="username" column="username"/>
+            <result property="avatar"  column="avatar"/>
+            <result property="signature" column="signature"/>
+        </association>
+    </resultMap>
+
+    <select id="selectOnetopic"  resultMap="selectOnetopic">
+        select
+                topic.id,
+                topic.title,
+                topic.content,
+                topic.userId,
+                topic.boardId,
+                topic.updatedTime,
+                user.id as user_id,
+                user.username,
+                user.avatar,
+                user.signature
+        from topic join user
+                on topic.userId = user.id
+        where topic.id = #{id}
+    </select>
+
+
+    <resultMap id="selectAll_board" type="Big_project.ssm.model.TopicModel">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="boardId" column="boardId"/>
+        <result property="userId" column="userId"/>
+        <result property="createdTime" column="createdTime"/>
+        <result property="updatedTime" column="updatedTime"/>
+        <result property="Visit" column="Visit"/>
+        <result property="toiccomment_Visit" column="toiccomment_Visit"/>
+        <association property="board" javaType="Big_project.ssm.model.BoardModel" column="board">
+            <id property="id" column="c_id"/>
+            <result property="name" column="name"/>
+            <result property="sign" column="sign"/>
+        </association>
+        <association property="user" javaType="Big_project.ssm.model.UserModel" column="u_username">
+            <result property="avatar" column="avatar"/>
+        </association>
+    </resultMap>
+
+    <select id="selectAll_board"  resultMap="selectAll_board">
+        select
+                topic.id,
+                topic.title,
+                topic.content,
+                topic.boardId,
+                topic.userId,
+                topic.createdTime,
+                topic.updatedTime,
+                topic.Visit,
+                topic.toiccomment_Visit,
+                board.id  as c_id,
+                board.name,
+                board.sign,
+                user.avatar
+        from
+                topic  left join board
+                        on topic.boardId = board.id
+                       join user
+                        on user.id  = topic.userId
+        order by updatedTime desc
+    </select>
+
+
+    <resultMap id="selectAllOneboard" type="Big_project.ssm.model.TopicModel">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="boardId" column="boardId"/>
+        <result property="userId" column="userId"/>
+        <result property="createdTime" column="createdTime"/>
+        <result property="updatedTime" column="updatedTime"/>
+        <result property="Visit" column="Visit"/>
+        <result property="toiccomment_Visit" column="toiccomment_Visit"/>
+        <association property="board" javaType="Big_project.ssm.model.BoardModel" column="board">
+            <id property="id" column="c_id"/>
+            <result property="name" column="name"/>
+            <result property="sign" column="sign"/>
+        </association>
+        <association property="user" javaType="Big_project.ssm.model.UserModel" column="u_username">
+            <result property="avatar" column="avatar"/>
+        </association>
+    </resultMap>
+
+    <select id="selectAllOneboard"  resultMap="selectAllOneboard">
+        select
+                topic.id,
+                topic.title,
+                topic.content,
+                topic.boardId,
+                topic.userId,
+                topic.createdTime,
+                topic.updatedTime,
+                topic.Visit,
+                topic.toiccomment_Visit,
+                board.id  as c_id,
+                board.name,
+                board.sign,
+                user.avatar
+        from
+                topic  left join board
+                        on topic.boardId = board.id
+                       join user
+                        on user.id  = topic.userId
+        where topic.boardId = #{id}  order by updatedTime desc
+    </select>
+</mapper>

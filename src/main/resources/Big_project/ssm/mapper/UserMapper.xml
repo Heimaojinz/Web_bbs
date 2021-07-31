@@ -1,0 +1,121 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 和 java mapper 的类名一样，从包名开始打，有自动补全-->
+<mapper namespace="Big_project.ssm.mapper.UserMapper">
+    <!-- resultType 和 mapper 中的方法返回值一样，不能省，从包名开始打，有自动补全-->
+    <!--  里面的 sql 语句，有自动补全,要配置 ide 的 datasource -->
+    <select id="selectAll" resultType="Big_project.ssm.model.UserModel">
+        SELECT * FROM ssm.user
+    </select>
+
+    <!-- 传参数方式1，直接传入一个基本类型 int，这个 int 会被绑定到 ${id} -->
+    <select id="selectOne" resultType="Big_project.ssm.model.UserModel">
+        SELECT * FROM ssm.user WHERE id = #{id}
+    </select>
+
+    <select id="selectOneByUsername" resultType="Big_project.ssm.model.UserModel">
+        SELECT * FROM ssm.user WHERE username = #{username}
+    </select>
+
+    <!-- 传参方式2，传入一个对象。content 代表这个对象的 content 属性，注意这个对象要有 getter setter -->
+    <!-- useGeneratedKeys keyProperty 当我传入一个对象的时候，这两个属性可以把数据库创建的 id 赋值给这个对象 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ssm.user
+            (username, password, avatar, role, email,createdTime, updatedTime, signature)
+        VALUES
+            (#{username}, #{password},#{avatar}, #{role}, #{email}, #{createdTime}, #{updatedTime}, #{signature})
+    </insert>
+    
+    <update id="update">
+        UPDATE ssm.user
+        SET
+            username = #{username},
+            password = #{password}
+        WHERE id = #{id}
+    </update>
+
+    <update id="setting_update">
+        UPDATE ssm.user
+        SET
+                username = #{username},
+                email = #{email},
+                signature = #{signature},
+                avatar = #{avatar}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM ssm.user WHERE id = #{id}
+    </delete>
+
+
+    <update id="updated">
+        UPDATE ssm.user
+        SET
+                password = #{password}
+        WHERE id = #{id};
+    </update>
+
+
+    <resultMap id="messageall" type="Big_project.ssm.model.UserModel">
+        <id property="id" column="id"/>
+        <result property="avatar" column="avatar"/>
+        <result property="username" column="username"/>
+        <collection property="commentList" ofType="Big_project.ssm.model.MessageModel">
+            <id property="id" column="message_id"/>
+            <result property="content" column="content"/>
+            <result property="updatedTime" column="updatedTime"/>
+            <result property="classify" column="classify"/>
+        </collection>
+    </resultMap>
+
+    <select id="messageAll" resultMap="messageall">
+        SELECT distinct
+                user.id,
+                user.username,
+                user.avatar,
+                message.id as message_id,
+                message.content,
+                message.updatedTime,
+                message.classify
+         from message join user
+                on message.senderId = user.id
+                        and message.classify = '私信'
+        where receiverId  = #{id}
+        order by message.updatedTime desc
+    </select>
+
+
+    <resultMap id="messageall2" type="Big_project.ssm.model.UserModel">
+        <id property="id" column="id"/>
+        <result property="avatar" column="avatar"/>
+        <result property="username" column="username"/>
+        <collection property="commentList" ofType="Big_project.ssm.model.MessageModel">
+            <id property="id" column="message_id"/>
+            <result property="content" column="content"/>
+            <result property="updatedTime" column="updatedTime"/>
+            <result property="classify" column="classify"/>
+            <result property="topic_Id" column="topic_Id"/>
+        </collection>
+    </resultMap>
+
+    <select id="messageAll2" resultMap="messageall2">
+        SELECT distinct
+                user.id,
+                user.username,
+                user.avatar,
+                message.id as message_id,
+                message.content,
+                message.updatedTime,
+                message.classify,
+                message.topic_id
+         from message join user
+                on message.senderId = user.id
+                        and message.classify = '@信息'
+        where receiverId  = #{id}
+        order by message.updatedTime desc
+    </select>
+
+
+</mapper>

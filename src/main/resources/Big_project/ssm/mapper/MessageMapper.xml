@@ -1,0 +1,107 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 和 java mapper 的类名一样，从包名开始打，有自动补全-->
+<mapper namespace="Big_project.ssm.mapper.MessageMapper">
+    <!-- resultType 和 mapper 中的方法返回值一样，不能省，从包名开始打，有自动补全-->
+    <!--  里面的 sql 语句，有自动补全,要配置 ide 的 datasource -->
+
+    <resultMap id="selectall" type="Big_project.ssm.model.MessageModel">
+        <id property="id" column="id"/>
+        <result property="content" column="content"/>
+        <result property="updatedTime" column="updatedTime"/>
+        <result property="classify" column="classify"/>
+        <collection property="user" ofType="Big_project.ssm.model.UserModel">
+            <result property="username" column="username"/>
+            <result property="avatar" column="avatar"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectAll" resultMap="selectall">
+        SELECT distinct
+            message.id,
+            message.content,
+            message.updatedTime,
+            message.classify,
+            user.username,
+            user.avatar
+        from message join user
+            on message.senderId = user.id
+            where receiverId  = #{id}
+              and message.classify = #{classify}
+        order by message.updatedTime desc
+    </select>
+
+    <delete id="delete">
+        DELETE FROM ssm.message
+        WHERE message.receiverId = #{receiverId} and message.senderId = #{senderId}
+    </delete>
+
+    <delete id="delete2">
+        DELETE FROM ssm.message
+        WHERE message.id = #{id}
+    </delete>
+
+<!--    &lt;!&ndash; 传参数方式1，直接传入一个基本类型 int，这个 int 会被绑定到 ${id} &ndash;&gt;-->
+    <select id="findid" resultType="Big_project.ssm.model.MessageModel">
+        SELECT * FROM ssm.message WHERE message.id = #{id}
+    </select>
+
+    <select id="selectOneall" resultType="Big_project.ssm.model.MessageModel">
+        SELECT * FROM ssm.message WHERE id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ssm.message
+                (content, senderId, receiverId, createdTime, updatedTime, classify, topic_Id)
+        VALUES
+                (#{content}, #{senderId}, #{receiverId}, #{updatedTime}, #{createdTime}, #{classify}, #{topic_Id})
+    </insert>
+<!--    <select id="selectAllOne" resultType="BoardModel">-->
+<!--        SELECT * FROM ssm.board WHERE name = #{name}-->
+<!--    </select>-->
+
+    <resultMap id="messageindex" type="Big_project.ssm.model.MessageModel">
+        <id property="id" column="id"/>
+        <result property="content" column="content"/>
+        <result property="updatedTime" column="updatedTime"/>
+        <result property="classify" column="classify"/>
+        <collection property="user" ofType="Big_project.ssm.model.UserModel">
+            <id property="id" column="user_id"/>
+            <result property="username" column="username"/>
+            <result property="avatar" column="avatar"/>
+        </collection>
+    </resultMap>
+
+    <select id="index" resultMap="messageindex">
+        SELECT distinct
+                message.id,
+                message.content,
+                message.updatedTime,
+                message.classify,
+                user.id as user_id,
+                user.username,
+                user.avatar
+        from message join user
+                on message.senderId = user.id
+                and message.classify = '私信'
+
+        where receiverId  = #{receiverId}
+          and message.senderId = #{senderId}
+        UNION all
+        SELECT distinct
+                message.id,
+                message.content,
+                message.updatedTime,
+                message.classify,
+                user.id as user_id,
+                user.username,
+                user.avatar
+        from message join user
+                on message.senderId = user.id
+                        and message.classify = '私信'
+        where receiverId  = #{senderId}
+          and message.senderId = #{receiverId}
+        order by updatedTime
+    </select>
+ </mapper>
